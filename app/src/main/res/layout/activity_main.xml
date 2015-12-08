@@ -11,9 +11,8 @@
         android:layout_height="match_parent"
         android:id="@+id/grid_view_movie"
         android:layout_gravity="center_horizontal|top"
-        android:columnWidth="100dp"
         android:gravity="center"
-        android:numColumns="auto_fit"
+        android:numColumns="5"
         android:verticalSpacing="10dp"
         android:horizontalSpacing="10dp" />
 </FrameLayout>

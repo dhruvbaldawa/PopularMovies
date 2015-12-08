@@ -25,7 +25,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayAdapter<String> mMovieAdapter;
+    private MovieAdapter mMovieAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,20 +33,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setTitle("Popular Movies");
 
-        String[] sampleData = {
-                "Test 1",
-                "Test 2",
-                "Test 3",
-                "Test 4",
-                "Test 5",
-        };
-        ArrayList<String> sampleList = new ArrayList<String>(Arrays.asList(sampleData));
-
-        mMovieAdapter = new ArrayAdapter<String>(
-                this,
-                R.layout.list_item_movie,
-                R.id.list_item_movie_textview
-        );
+        mMovieAdapter = new MovieAdapter(this);
 //        mMovieAdapter.setNotifyOnChange(true);
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
@@ -59,16 +46,16 @@ public class MainActivity extends AppCompatActivity {
     public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
-        private String[] getMovieTitlesFromJson(String moviesJsonStr) throws JSONException {
+        private String[] getPostersFromJson(String moviesJsonStr) throws JSONException {
             final String TMDB_RESULTS = "results";
-            final String TMDB_TITLE = "title";
+            final String TMDB_POSTER_KEY = "poster_path";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray resultArray = moviesJson.getJSONArray(TMDB_RESULTS);
 
             String[] result = new String[resultArray.length()];
             for (int i = 0; i < resultArray.length(); i++) {
-                result[i] = resultArray.getJSONObject(i).getString(TMDB_TITLE);
+                result[i] = resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY);
             }
             return result;
         }
@@ -141,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                return getMovieTitlesFromJson(moviesJsonStr);
+                return getPostersFromJson(moviesJsonStr);
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
