@@ -59,15 +59,16 @@ public class MovieInfo implements Parcelable {
         return 0;
     }
 
-    static final Parcelable.Creator<MovieInfo> CREATOR
-            = new Parcelable.Creator<MovieInfo>() {
-
-        public MovieInfo createFromParcel(Parcel in) {
-            return new MovieInfo(in);
+    public final static Parcelable.Creator<MovieInfo> CREATOR = new Parcelable.Creator<MovieInfo>() {
+        @Override
+        public MovieInfo createFromParcel(Parcel parcel) {
+            return new MovieInfo(parcel);
         }
 
-        public MovieInfo[] newArray(int size) {
-            return new MovieInfo[size];
+        @Override
+        public MovieInfo[] newArray(int i) {
+            return new MovieInfo[i];
         }
+
     };
 }

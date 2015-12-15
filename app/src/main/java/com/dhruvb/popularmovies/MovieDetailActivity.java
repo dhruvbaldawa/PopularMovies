@@ -20,7 +20,13 @@ public class MovieDetailActivity extends AppCompatActivity {
         TextView userRatingTextView = (TextView)findViewById(R.id.movie_detail_user_rating_textview);
         TextView overviewTextView = (TextView)findViewById(R.id.movie_detail_overview_textview);
 
-//        Picasso.with(this).load(getCompletePosterUrl(imageUrl)).into(moviePosterImageView);
+        Bundle b = getIntent().getExtras();
+        MovieInfo movieInfo = b.getParcelable("com.dhruvb.popularmovies.MovieInfo");
 
+        Picasso.with(this).load(MovieInfo.getCompleteImageUrl(movieInfo.originalPosterUrl, "w185")).into(moviePosterImageView);
+        originalTitleTextView.setText(movieInfo.title);
+        releaseDateTextView.setText(movieInfo.releaseDate);
+        userRatingTextView.setText(movieInfo.userRating);
+        overviewTextView.setText(movieInfo.overview);
     }
 }

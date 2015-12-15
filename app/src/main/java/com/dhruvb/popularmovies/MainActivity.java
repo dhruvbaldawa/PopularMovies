@@ -1,11 +1,13 @@
 package com.dhruvb.popularmovies;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.google.android.gms.appindexing.Action;
@@ -22,11 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import com.dhruvb.popularmovies.MovieInfo;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -50,8 +47,16 @@ public class MainActivity extends AppCompatActivity {
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
-        Log.v(LOG_TAG, "test >>>>" + (getWindowManager().getDefaultDisplay().getWidth()));
         movieGridView.setNumColumns(getWindowManager().getDefaultDisplay().getWidth() / 184);
+        movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                MovieInfo movieInfo = mMovieAdapter.getItem(position);
+                Intent intent = new Intent(view.getContext(), MovieDetailActivity.class)
+                        .putExtra("com.dhruvb.popularmovies.MovieInfo", movieInfo);
+                startActivity(intent);
+            }
+        });
 
         FetchMoviesTask movieTask = new FetchMoviesTask();
         movieTask.execute("test");
