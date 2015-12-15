@@ -8,6 +8,10 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,10 +26,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.dhruvb.popularmovies.MovieInfo;
+
 
 public class MainActivity extends AppCompatActivity {
 
     private MovieAdapter mMovieAdapter;
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,30 +50,84 @@ public class MainActivity extends AppCompatActivity {
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
+        Log.v(LOG_TAG, "test >>>>" + (getWindowManager().getDefaultDisplay().getWidth()));
+        movieGridView.setNumColumns(getWindowManager().getDefaultDisplay().getWidth() / 184);
 
         FetchMoviesTask movieTask = new FetchMoviesTask();
         movieTask.execute("test");
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.dhruvb.popularmovies/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.dhruvb.popularmovies/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
+
+    public class FetchMoviesTask extends AsyncTask<String, Void, MovieInfo[]> {
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
-        private String[] getPostersFromJson(String moviesJsonStr) throws JSONException {
+        private MovieInfo[] getPostersFromJson(String moviesJsonStr) throws JSONException {
             final String TMDB_RESULTS = "results";
             final String TMDB_POSTER_KEY = "poster_path";
+            final String TMDB_TITLE_KEY = "title";
+            final String TMDB_RELEASE_DATE_KEY = "release_date";
+            final String TMDB_USER_RATING_KEY = "vote_average";
+            final String TMDB_OVERVIEW_KEY = "overview";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray resultArray = moviesJson.getJSONArray(TMDB_RESULTS);
 
-            String[] result = new String[resultArray.length()];
+            MovieInfo[] result = new MovieInfo[resultArray.length()];
             for (int i = 0; i < resultArray.length(); i++) {
-                result[i] = resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY);
+                String posterUrl = resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY);
+                String title = resultArray.getJSONObject(i).getString(TMDB_TITLE_KEY);
+                String releaseDate = resultArray.getJSONObject(i).getString(TMDB_RELEASE_DATE_KEY);
+                String userRating = resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY);
+                String overview = resultArray.getJSONObject(i).getString(TMDB_OVERVIEW_KEY);
+                result[i] = new MovieInfo(posterUrl, title, releaseDate, userRating, overview);
             }
             return result;
         }
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected MovieInfo[] doInBackground(String... params) {
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -137,11 +203,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String[] result) {
+        protected void onPostExecute(MovieInfo[] result) {
             if (result != null) {
                 mMovieAdapter.clear();
-                for (String mMovieStr : result) {
-                    mMovieAdapter.add(mMovieStr);
+                for (MovieInfo mMovieInfo : result) {
+                    mMovieAdapter.add(mMovieInfo);
                 }
             }
         }
