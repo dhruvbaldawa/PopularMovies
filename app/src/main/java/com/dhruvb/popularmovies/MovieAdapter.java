@@ -9,14 +9,16 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 /**
  * Created by dhruv on 12/9/15.
  */
 public class MovieAdapter extends ArrayAdapter<MovieInfo> {
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
 
-    public MovieAdapter(Activity context) {
-        super(context, 0);
+    public MovieAdapter(Activity context, List<MovieInfo> movieInfo) {
+        super(context, 0, movieInfo);
     }
 
     @Override

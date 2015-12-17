@@ -24,12 +24,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private MovieAdapter mMovieAdapter;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private ArrayList<MovieInfo> mMovieInfoList;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -42,7 +44,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setTitle("Popular Movies");
 
-        mMovieAdapter = new MovieAdapter(this);
+        if (savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+            mMovieInfoList = new ArrayList<MovieInfo>();
+        } else {
+            mMovieInfoList = savedInstanceState.getParcelableArrayList("movies");
+        }
+        mMovieAdapter = new MovieAdapter(this, mMovieInfoList);
 //        mMovieAdapter.setNotifyOnChange(true);
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
@@ -111,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         private MovieInfo[] getPostersFromJson(String moviesJsonStr) throws JSONException {
             final String TMDB_RESULTS = "results";
             final String TMDB_POSTER_KEY = "poster_path";
-            final String TMDB_TITLE_KEY = "title";
+            final String TMDB_TITLE_KEY = "original_title";
             final String TMDB_RELEASE_DATE_KEY = "release_date";
             final String TMDB_USER_RATING_KEY = "vote_average";
             final String TMDB_OVERVIEW_KEY = "overview";

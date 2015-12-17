@@ -23,6 +23,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         Bundle b = getIntent().getExtras();
         MovieInfo movieInfo = b.getParcelable("com.dhruvb.popularmovies.MovieInfo");
 
+        setTitle(movieInfo.title);
         Picasso.with(this).load(MovieInfo.getCompleteImageUrl(movieInfo.originalPosterUrl, "w185")).into(moviePosterImageView);
         originalTitleTextView.setText(movieInfo.title);
         releaseDateTextView.setText(movieInfo.releaseDate);
