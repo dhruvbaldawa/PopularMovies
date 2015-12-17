@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -66,10 +68,27 @@ public class MainActivity extends AppCompatActivity {
         });
 
         FetchMoviesTask movieTask = new FetchMoviesTask();
-        movieTask.execute("test");
+        movieTask.execute("popularity.desc");
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_sort_by) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -155,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
                         .appendQueryParameter(API_KEY, BuildConfig.THEMOVIEDB_API_KEY)
-                        .appendQueryParameter(MOVIES_SORT_BY_KEY, "popularity.desc")
+                        .appendQueryParameter(MOVIES_SORT_BY_KEY, params[0])
                         .build();
 
                 URL url = new URL(builtUri.toString());
