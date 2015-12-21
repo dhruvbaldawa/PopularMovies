@@ -1,9 +1,11 @@
 package com.dhruvb.popularmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     private MovieAdapter mMovieAdapter;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    public static final String PREFS_FILE = "shared_preferences";
     private ArrayList<MovieInfo> mMovieInfoList;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -44,12 +47,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setTitle("Popular Movies");
+        setTitle(R.string.app_name);
 
-        if (savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+        if (savedInstanceState == null || !savedInstanceState.containsKey(
+                getString(R.string.main_activity_movie_detail_key))) {
             mMovieInfoList = new ArrayList<MovieInfo>();
         } else {
-            mMovieInfoList = savedInstanceState.getParcelableArrayList("movies");
+            mMovieInfoList = savedInstanceState.getParcelableArrayList(
+                    getString(R.string.main_activity_movie_detail_key));
         }
         mMovieAdapter = new MovieAdapter(this, mMovieInfoList);
 //        mMovieAdapter.setNotifyOnChange(true);
@@ -67,8 +72,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        FetchMoviesTask movieTask = new FetchMoviesTask();
-        movieTask.execute("popularity.desc");
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -84,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_sort_by) {
+        if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -93,8 +97,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
+        updateMovies();
         super.onStart();
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
@@ -109,6 +113,16 @@ public class MainActivity extends AppCompatActivity {
                 Uri.parse("android-app://com.dhruvb.popularmovies/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    private void updateMovies() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
+                getString(R.string.pref_sort_by_value_most_popular));
+
+        FetchMoviesTask movieTask = new FetchMoviesTask();
+        movieTask.execute(sortOrder);
+        Log.v(LOG_TAG, "fetching movie information");
     }
 
     @Override

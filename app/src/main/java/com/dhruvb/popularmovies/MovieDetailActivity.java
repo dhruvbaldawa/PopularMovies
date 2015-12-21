@@ -1,5 +1,6 @@
 package com.dhruvb.popularmovies;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
@@ -24,10 +25,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         MovieInfo movieInfo = b.getParcelable("com.dhruvb.popularmovies.MovieInfo");
 
         setTitle(movieInfo.title);
+        Resources res = getResources();
+
         Picasso.with(this).load(MovieInfo.getCompleteImageUrl(movieInfo.originalPosterUrl, "w185")).into(moviePosterImageView);
         originalTitleTextView.setText(movieInfo.title);
-        releaseDateTextView.setText(movieInfo.releaseDate);
-        userRatingTextView.setText(movieInfo.userRating);
+        releaseDateTextView.setText(String.format(
+                res.getString(R.string.movie_detail_label_release_date), movieInfo.releaseDate));
+        userRatingTextView.setText(String.format(
+                res.getString(R.string.movie_detail_label_rating), movieInfo.userRating));
         overviewTextView.setText(movieInfo.overview);
     }
 }
