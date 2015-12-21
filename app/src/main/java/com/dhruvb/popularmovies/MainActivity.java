@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         setTitle(R.string.app_name);
 
@@ -61,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
-        movieGridView.setNumColumns(getWindowManager().getDefaultDisplay().getWidth() / 184);
+//        movieGridView.setNumColumns(getWindowManager().getDefaultDisplay().getWidth() / 500);
+        movieGridView.setNumColumns(2);
         movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -120,9 +122,9 @@ public class MainActivity extends AppCompatActivity {
         String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
                 getString(R.string.pref_sort_by_value_most_popular));
 
+        Log.v(LOG_TAG, "fetching movie information: " + sortOrder);
         FetchMoviesTask movieTask = new FetchMoviesTask();
         movieTask.execute(sortOrder);
-        Log.v(LOG_TAG, "fetching movie information");
     }
 
     @Override

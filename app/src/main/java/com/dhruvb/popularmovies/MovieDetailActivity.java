@@ -27,7 +27,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         setTitle(movieInfo.title);
         Resources res = getResources();
 
-        Picasso.with(this).load(MovieInfo.getCompleteImageUrl(movieInfo.originalPosterUrl, "w185")).into(moviePosterImageView);
+        Picasso.with(this).load(MovieInfo.getCompleteImageUrl(movieInfo.originalPosterUrl, "w500")).into(moviePosterImageView);
         originalTitleTextView.setText(movieInfo.title);
         releaseDateTextView.setText(String.format(
                 res.getString(R.string.movie_detail_label_release_date), movieInfo.releaseDate));
