@@ -3,7 +3,6 @@ package com.dhruvb.popularmovies;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -22,21 +21,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
+
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private MovieAdapter mMovieAdapter;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    public static final String PREFS_FILE = "shared_preferences";
     private ArrayList<MovieInfo> mMovieInfoList;
+    private OkHttpClient httpClient;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -52,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null || !savedInstanceState.containsKey(
                 getString(R.string.main_activity_movie_detail_key))) {
-            mMovieInfoList = new ArrayList<MovieInfo>();
+            mMovieInfoList = new ArrayList<>();
         } else {
             mMovieInfoList = savedInstanceState.getParcelableArrayList(
                     getString(R.string.main_activity_movie_detail_key));
@@ -63,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
 //        movieGridView.setNumColumns(getWindowManager().getDefaultDisplay().getWidth() / 500);
-        movieGridView.setNumColumns(2);
         movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -77,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        httpClient = new OkHttpClient();
     }
 
     @Override
@@ -117,14 +116,81 @@ public class MainActivity extends AppCompatActivity {
         AppIndex.AppIndexApi.start(client, viewAction);
     }
 
+    private MovieInfo[] getMovieInfoFromJson(String moviesJsonStr) throws JSONException {
+        final String TMDB_RESULTS = "results";
+        final String TMDB_POSTER_KEY = "poster_path";
+        final String TMDB_TITLE_KEY = "original_title";
+        final String TMDB_RELEASE_DATE_KEY = "release_date";
+        final String TMDB_USER_RATING_KEY = "vote_average";
+        final String TMDB_OVERVIEW_KEY = "overview";
+
+        JSONObject moviesJson = new JSONObject(moviesJsonStr);
+        JSONArray resultArray = moviesJson.getJSONArray(TMDB_RESULTS);
+
+        MovieInfo[] result = new MovieInfo[resultArray.length()];
+        for (int i = 0; i < resultArray.length(); i++) {
+            String posterUrl = resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY);
+            String title = resultArray.getJSONObject(i).getString(TMDB_TITLE_KEY);
+            String releaseDate = resultArray.getJSONObject(i).getString(TMDB_RELEASE_DATE_KEY);
+            String userRating = resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY);
+            String overview = resultArray.getJSONObject(i).getString(TMDB_OVERVIEW_KEY);
+            result[i] = new MovieInfo(posterUrl, title, releaseDate, userRating, overview);
+        }
+        return result;
+    }
+
     private void updateMovies() {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
                 getString(R.string.pref_sort_by_value_most_popular));
 
-        Log.v(LOG_TAG, "fetching movie information: " + sortOrder);
-        FetchMoviesTask movieTask = new FetchMoviesTask();
-        movieTask.execute(sortOrder);
+        final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
+        final String MOVIES_SORT_BY_KEY = "sort_by";
+        final String API_KEY = "api_key";
+
+        Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY, BuildConfig.THEMOVIEDB_API_KEY)
+                .appendQueryParameter(MOVIES_SORT_BY_KEY, sortOrder)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(builtUri.toString())
+                .build();
+
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+                if (!response.isSuccessful()) throw new IOException("Movie fetching issues: " + response);
+
+                MovieInfo[] movieInfos;
+                try {
+//                    Log.v(LOG_TAG, "HTTP response: " + response.toString());
+                    movieInfos = getMovieInfoFromJson(response.body().string());
+                } catch (JSONException e) {
+                    movieInfos = null;
+                    Log.e(LOG_TAG, e.getMessage(), e);
+                    e.printStackTrace();
+                }
+
+                final MovieInfo[] finalMovieInfos = movieInfos;
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (finalMovieInfos != null) {
+                            mMovieAdapter.clear();
+                            for (MovieInfo mMovieInfo : finalMovieInfos) {
+                                mMovieAdapter.add(mMovieInfo);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -145,118 +211,5 @@ public class MainActivity extends AppCompatActivity {
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
-    }
-
-    public class FetchMoviesTask extends AsyncTask<String, Void, MovieInfo[]> {
-        private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
-
-        private MovieInfo[] getPostersFromJson(String moviesJsonStr) throws JSONException {
-            final String TMDB_RESULTS = "results";
-            final String TMDB_POSTER_KEY = "poster_path";
-            final String TMDB_TITLE_KEY = "original_title";
-            final String TMDB_RELEASE_DATE_KEY = "release_date";
-            final String TMDB_USER_RATING_KEY = "vote_average";
-            final String TMDB_OVERVIEW_KEY = "overview";
-
-            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            JSONArray resultArray = moviesJson.getJSONArray(TMDB_RESULTS);
-
-            MovieInfo[] result = new MovieInfo[resultArray.length()];
-            for (int i = 0; i < resultArray.length(); i++) {
-                String posterUrl = resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY);
-                String title = resultArray.getJSONObject(i).getString(TMDB_TITLE_KEY);
-                String releaseDate = resultArray.getJSONObject(i).getString(TMDB_RELEASE_DATE_KEY);
-                String userRating = resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY);
-                String overview = resultArray.getJSONObject(i).getString(TMDB_OVERVIEW_KEY);
-                result[i] = new MovieInfo(posterUrl, title, releaseDate, userRating, overview);
-            }
-            return result;
-        }
-
-        @Override
-        protected MovieInfo[] doInBackground(String... params) {
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String moviesJsonStr = null;
-            try {
-
-                final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
-                final String MOVIES_SORT_BY_KEY = "sort_by";
-                final String API_KEY = "api_key";
-
-                Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
-                        .appendQueryParameter(API_KEY, BuildConfig.THEMOVIEDB_API_KEY)
-                        .appendQueryParameter(MOVIES_SORT_BY_KEY, params[0])
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    moviesJsonStr = null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    moviesJsonStr = null;
-                }
-                moviesJsonStr = buffer.toString();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attemping
-                // to parse it.
-                moviesJsonStr = null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            try {
-                return getPostersFromJson(moviesJsonStr);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(MovieInfo[] result) {
-            if (result != null) {
-                mMovieAdapter.clear();
-                for (MovieInfo mMovieInfo : result) {
-                    mMovieAdapter.add(mMovieInfo);
-                }
-            }
-        }
     }
 }
