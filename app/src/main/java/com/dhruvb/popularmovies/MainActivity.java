@@ -144,13 +144,11 @@ public class MainActivity extends AppCompatActivity {
         String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
                 getString(R.string.pref_sort_by_value_most_popular));
 
-        final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
-        final String MOVIES_SORT_BY_KEY = "sort_by";
+        final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/" + sortOrder;
         final String API_KEY = "api_key";
 
         Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
                 .appendQueryParameter(API_KEY, BuildConfig.THEMOVIEDB_API_KEY)
-                .appendQueryParameter(MOVIES_SORT_BY_KEY, sortOrder)
                 .build();
 
         Request request = new Request.Builder()
