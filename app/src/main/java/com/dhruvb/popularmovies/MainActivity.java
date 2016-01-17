@@ -1,7 +1,9 @@
 package com.dhruvb.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -13,6 +15,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.dhruvb.popularmovies.data.MoviesContract;
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -48,16 +52,23 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         setTitle(R.string.app_name);
+// @TODO: fix this thing after moving to content providers
+//
+//        if (savedInstanceState == null || !savedInstanceState.containsKey(
+//                getString(R.string.main_activity_movie_detail_key))) {
+//            mMovieInfoList = new ArrayList<>();
+//        } else {
+//            mMovieInfoList = savedInstanceState.getParcelableArrayList(
+//                    getString(R.string.main_activity_movie_detail_key));
+//        }
 
-        if (savedInstanceState == null || !savedInstanceState.containsKey(
-                getString(R.string.main_activity_movie_detail_key))) {
-            mMovieInfoList = new ArrayList<>();
-        } else {
-            mMovieInfoList = savedInstanceState.getParcelableArrayList(
-                    getString(R.string.main_activity_movie_detail_key));
-        }
+        Cursor movieCursor = getContentResolver().query(MoviesContract.MoviesEntry.CONTENT_URI,
+                new String[] { MoviesContract.MoviesEntry._ID},
+                null,
+                null,
+                null);
+
         mMovieAdapter = new MovieAdapter(this, mMovieInfoList);
-//        mMovieAdapter.setNotifyOnChange(true);
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
@@ -71,6 +82,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        Stetho.initialize(
+                Stetho.newInitializerBuilder(this)
+                        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+                        .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
+                        .build()
+        );
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -116,27 +134,46 @@ public class MainActivity extends AppCompatActivity {
         AppIndex.AppIndexApi.start(client, viewAction);
     }
 
-    private MovieInfo[] getMovieInfoFromJson(String moviesJsonStr) throws JSONException {
+    private void clearMoviesInDatabase() {
+        Log.v(LOG_TAG, "clearing out the movie database!");
+        getContentResolver().delete(MoviesContract.MoviesEntry.CONTENT_URI, null, null);
+    }
+
+    private void insertMoviesFromJson(String moviesJsonStr) throws JSONException {
+        final String TMDB_ID_KEY = "id";
         final String TMDB_RESULTS = "results";
         final String TMDB_POSTER_KEY = "poster_path";
-        final String TMDB_TITLE_KEY = "original_title";
+        final String TMDB_TITLE_KEY = "title";
         final String TMDB_RELEASE_DATE_KEY = "release_date";
         final String TMDB_USER_RATING_KEY = "vote_average";
         final String TMDB_OVERVIEW_KEY = "overview";
+        final String TMDB_VIDEO_KEY = "video";
+        final String TMDB_BACKDROP__KEY = "backdrop_path";
 
         JSONObject moviesJson = new JSONObject(moviesJsonStr);
         JSONArray resultArray = moviesJson.getJSONArray(TMDB_RESULTS);
 
-        MovieInfo[] result = new MovieInfo[resultArray.length()];
+        ContentValues[] values = new ContentValues[resultArray.length()];
         for (int i = 0; i < resultArray.length(); i++) {
-            String posterUrl = resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY);
-            String title = resultArray.getJSONObject(i).getString(TMDB_TITLE_KEY);
-            String releaseDate = resultArray.getJSONObject(i).getString(TMDB_RELEASE_DATE_KEY);
-            String userRating = resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY);
-            String overview = resultArray.getJSONObject(i).getString(TMDB_OVERVIEW_KEY);
-            result[i] = new MovieInfo(posterUrl, title, releaseDate, userRating, overview);
+            values[i] = new ContentValues();
+            values[i].put(MoviesContract.MoviesEntry._ID,
+                    resultArray.getJSONObject(i).getInt(TMDB_ID_KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_TITLE,
+                    resultArray.getJSONObject(i).getString(TMDB_TITLE_KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_OVERVIEW,
+                    resultArray.getJSONObject(i).getString(TMDB_OVERVIEW_KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE,
+                    resultArray.getJSONObject(i).getString(TMDB_RELEASE_DATE_KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_POSTER_URL,
+                    resultArray.getJSONObject(i).getString(TMDB_POSTER_KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_BACKDROP_URL,
+                    resultArray.getJSONObject(i).getString(TMDB_BACKDROP__KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_RATING,
+                    resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY));
+            values[i].put(MoviesContract.MoviesEntry.COLUMN_HAS_VIDEO,
+                    resultArray.getJSONObject(i).getString(TMDB_VIDEO_KEY));
         }
-        return result;
+        getContentResolver().bulkInsert(MoviesContract.MoviesEntry.CONTENT_URI, values);
     }
 
     private void updateMovies() {
@@ -165,28 +202,25 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Response response) throws IOException {
                 if (!response.isSuccessful()) throw new IOException("Movie fetching issues: " + response);
 
-                MovieInfo[] movieInfos;
                 try {
-//                    Log.v(LOG_TAG, "HTTP response: " + response.toString());
-                    movieInfos = getMovieInfoFromJson(response.body().string());
+                    clearMoviesInDatabase();
+                    insertMoviesFromJson(response.body().string());
                 } catch (JSONException e) {
-                    movieInfos = null;
                     Log.e(LOG_TAG, e.getMessage(), e);
                     e.printStackTrace();
                 }
-
-                final MovieInfo[] finalMovieInfos = movieInfos;
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (finalMovieInfos != null) {
-                            mMovieAdapter.clear();
-                            for (MovieInfo mMovieInfo : finalMovieInfos) {
-                                mMovieAdapter.add(mMovieInfo);
-                            }
-                        }
-                    }
-                });
+//
+//                MainActivity.this.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (finalMovieInfos != null) {
+//                            mMovieAdapter.clear();
+//                            for (MovieInfo mMovieInfo : finalMovieInfos) {
+//                                mMovieAdapter.add(mMovieInfo);
+//                            }
+//                        }
+//                    }
+//                });
             }
         });
     }

@@ -19,7 +19,8 @@ public class MoviesContract {
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_RELEASE_DATE = "release_date";
-        public static final String COLUMN_POSTER_URL = "poster_url";
+        public static final String COLUMN_POSTER_URL = "poster_path";
+        public static final String COLUMN_BACKDROP_URL = "backdrop_path";
         public static final String COLUMN_RATING = "rating";
         public static final String COLUMN_HAS_VIDEO = "has_video";
 

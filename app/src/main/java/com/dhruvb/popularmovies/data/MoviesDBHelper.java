@@ -3,6 +3,7 @@ package com.dhruvb.popularmovies.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Created by dhruv on 15/1/16.
@@ -19,14 +20,16 @@ public class MoviesDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+        Log.v(LOG_TAG, "creating database tables");
         final String SQL_CREATE_MOVIE_TABLE = "CREATE TABLE " +
                 MoviesContract.MoviesEntry.TABLE_MOVIES + "(" +
                 MoviesContract.MoviesEntry._ID + " INTEGER PRIMARY KEY, " +
-                MoviesContract.MoviesEntry.COLUMN_TITLE + " TEXT NOT NULL" +
-                MoviesContract.MoviesEntry.COLUMN_OVERVIEW + " TEXT NOT NULL" +
-                MoviesContract.MoviesEntry.COLUMN_RATING + " TEXT NOT NULL" +
-                MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL" +
-                MoviesContract.MoviesEntry.COLUMN_POSTER_URL + " TEXT NOT NULL" +
+                MoviesContract.MoviesEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
+                MoviesContract.MoviesEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
+                MoviesContract.MoviesEntry.COLUMN_RATING + " TEXT NOT NULL, " +
+                MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                MoviesContract.MoviesEntry.COLUMN_POSTER_URL + " TEXT NOT NULL, " +
+                MoviesContract.MoviesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL, " +
                 MoviesContract.MoviesEntry.COLUMN_HAS_VIDEO + " INTEGER DEFAULT 0" +
                 ");";
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIE_TABLE);
