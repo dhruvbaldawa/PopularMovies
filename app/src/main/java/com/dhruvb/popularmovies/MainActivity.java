@@ -60,15 +60,15 @@ public class MainActivity extends AppCompatActivity {
 //        } else {
 //            mMovieInfoList = savedInstanceState.getParcelableArrayList(
 //                    getString(R.string.main_activity_movie_detail_key));
-//        }
 
+//        }
         Cursor movieCursor = getContentResolver().query(MoviesContract.MoviesEntry.CONTENT_URI,
-                new String[] { MoviesContract.MoviesEntry._ID},
+                null,
                 null,
                 null,
                 null);
 
-        mMovieAdapter = new MovieAdapter(this, mMovieInfoList);
+        mMovieAdapter = new MovieAdapter(this, movieCursor, 0);
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
@@ -76,9 +76,10 @@ public class MainActivity extends AppCompatActivity {
         movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                MovieInfo movieInfo = mMovieAdapter.getItem(position);
+                long _id = mMovieAdapter.getItemId(position);
+                Uri uri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
                 Intent intent = new Intent(view.getContext(), MovieDetailActivity.class)
-                        .putExtra("com.dhruvb.popularmovies.MovieInfo", movieInfo);
+                        .putExtra("movieURI", uri);
                 startActivity(intent);
             }
         });
@@ -205,22 +206,21 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     clearMoviesInDatabase();
                     insertMoviesFromJson(response.body().string());
+
                 } catch (JSONException e) {
                     Log.e(LOG_TAG, e.getMessage(), e);
                     e.printStackTrace();
                 }
-//
-//                MainActivity.this.runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        if (finalMovieInfos != null) {
-//                            mMovieAdapter.clear();
-//                            for (MovieInfo mMovieInfo : finalMovieInfos) {
-//                                mMovieAdapter.add(mMovieInfo);
-//                            }
-//                        }
-//                    }
-//                });
+
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Cursor cursor = getContentResolver()
+                                .query(MoviesContract.MoviesEntry.CONTENT_URI, null, null, null, null);
+                        Cursor oldCursor = mMovieAdapter.swapCursor(cursor);
+                        if (!oldCursor.isClosed()) oldCursor.close();
+                    }
+                });
             }
         });
     }

@@ -34,5 +34,21 @@ public class MoviesContract {
         public static Uri buildMoviesUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static String getCompleteImageUrl(String imageUrl, String size) {
+            final String BASE_URL = "http://image.tmdb.org/t/p/";
+            switch (size) {
+                case "w92":
+                case "w154":
+                case "w185":
+                case "w342":
+                case "w500":
+                case "w780":
+                case "original":
+                    return BASE_URL + size + imageUrl;
+            }
+            return null;  // @TODO maybe raise an exception instead
+        }
+
     }
 }
