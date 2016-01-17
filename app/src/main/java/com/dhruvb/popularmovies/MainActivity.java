@@ -26,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -38,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MovieAdapter mMovieAdapter;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private ArrayList<MovieInfo> mMovieInfoList;
     private OkHttpClient httpClient;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -77,9 +75,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 long _id = mMovieAdapter.getItemId(position);
+                Log.v(LOG_TAG, "movie item position: " + _id);
                 Uri uri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
                 Intent intent = new Intent(view.getContext(), MovieDetailActivity.class)
-                        .putExtra("movieURI", uri);
+                        .setData(uri);
                 startActivity(intent);
             }
         });
@@ -217,8 +216,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         Cursor cursor = getContentResolver()
                                 .query(MoviesContract.MoviesEntry.CONTENT_URI, null, null, null, null);
-                        Cursor oldCursor = mMovieAdapter.swapCursor(cursor);
-                        if (!oldCursor.isClosed()) oldCursor.close();
+                        mMovieAdapter.changeCursor(cursor);
                     }
                 });
             }
@@ -228,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-
+        if (!mMovieAdapter.getCursor().isClosed()) mMovieAdapter.getCursor().close();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         Action viewAction = Action.newAction(
