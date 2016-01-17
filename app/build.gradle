@@ -1,9 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         applicationId "com.dhruvb.popularmovies"
@@ -34,6 +33,6 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.squareup.okhttp3:okhttp:3.0.0-RC1'
-    apt 'net.simonvt.schematic:schematic-compiler:0.6.4'
-    compile 'net.simonvt.schematic:schematic:0.6.4'
+    compile 'com.facebook.stetho:stetho:1.2.0'
+    compile 'com.facebook.stetho:stetho-okhttp:1.2.0'
 }
