@@ -29,6 +29,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         Uri movieURI = getIntent().getData();
         Cursor cursor = getContentResolver().query(movieURI, null, null, null, null);
+        if (!cursor.moveToFirst()) return;
 
         setTitle(cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_TITLE)));
         Resources res = getResources();
