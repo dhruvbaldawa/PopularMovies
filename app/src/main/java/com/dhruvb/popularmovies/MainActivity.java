@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
             values[i].put(MoviesContract.MoviesEntry.COLUMN_RATING,
                     resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY));
             values[i].put(MoviesContract.MoviesEntry.COLUMN_HAS_VIDEO,
-                    resultArray.getJSONObject(i).getString(TMDB_VIDEO_KEY));
+                    resultArray.getJSONObject(i).getBoolean(TMDB_VIDEO_KEY));
         }
         getContentResolver().bulkInsert(MoviesContract.MoviesEntry.CONTENT_URI, values);
     }

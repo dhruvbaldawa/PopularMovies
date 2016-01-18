@@ -42,5 +42,13 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:id="@+id/movie_detail_overview_textview" />
+
+        <LinearLayout
+            android:id="@+id/movie_detail_trailors_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:orientation="vertical">
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

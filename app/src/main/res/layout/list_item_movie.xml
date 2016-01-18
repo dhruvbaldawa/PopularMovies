@@ -4,5 +4,6 @@
     android:id="@+id/list_item_movie_imageview"
     android:layout_height="match_parent"
     android:scaleType="fitXY"
-    android:adjustViewBounds="true">
+    android:adjustViewBounds="true"
+    >
 </ImageView>
