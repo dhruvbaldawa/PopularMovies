@@ -50,5 +50,14 @@
             android:visibility="invisible"
             android:orientation="vertical">
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/movie_detail_reviews_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:orientation="vertical">
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

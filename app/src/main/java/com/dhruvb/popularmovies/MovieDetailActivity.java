@@ -156,7 +156,71 @@ public class MovieDetailActivity extends AppCompatActivity {
     }
 
     private void fetchAndShowReviews() {
+        final String REVIEWS_BASE_URL = "http://api.themoviedb.org/3/movie/" + mMovieId + "/reviews";
+        final String API_KEY = "api_key";
 
+        Uri builtUri = Uri.parse(REVIEWS_BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY, BuildConfig.THEMOVIEDB_API_KEY)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(builtUri.toString())
+                .build();
+
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(com.squareup.okhttp.Request request, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+                if (!response.isSuccessful()) throw new IOException("Trailor fetching issues: " + response);
+                final String TMDB_RESULTS = "results";
+                final String TMDB_REVIEW_AUTHOR_KEY = "author";
+                final String TMDB_REVIEW_CONTENT_KEY = "content";
+
+                final Vector<String> reviewAuthors = new Vector();
+                final Vector<String> reviewContents = new Vector();
+
+                try {
+                    JSONObject reviewsJSON = new JSONObject(response.body().string());
+                    JSONArray reviewsArray = reviewsJSON.getJSONArray(TMDB_RESULTS);
+
+                    for(int i=0; i < reviewsArray.length(); i++) {
+                        reviewAuthors.add(reviewsArray.getJSONObject(i).getString(TMDB_REVIEW_AUTHOR_KEY));
+                        reviewContents.add(reviewsArray.getJSONObject(i).getString(TMDB_REVIEW_CONTENT_KEY));
+                    }
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, "Error parsing reviews json response");
+                    e.printStackTrace();
+                }
+
+                if (reviewContents.isEmpty()) return;
+
+                MovieDetailActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LinearLayout reviewsLayout = (LinearLayout)findViewById(R.id.movie_detail_reviews_layout);
+                        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                        reviewsLayout.setVisibility(View.VISIBLE);
+                        reviewsLayout.removeAllViews();
+
+                        for (int i = 0; i < reviewContents.size(); i++) {
+
+                            View view = inflater.inflate(R.layout.list_item_review, null);
+                            view.setClickable(true);
+
+                            TextView authorTextView = (TextView)view.findViewById(R.id.movie_detail_review_author_textview);
+                            authorTextView.setText(reviewAuthors.get(i));
+                            TextView contentTextView = (TextView)view.findViewById(R.id.movie_detail_review_content_textview);
+                            contentTextView.setText(reviewContents.get(i));
+                            reviewsLayout.addView(view);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override
