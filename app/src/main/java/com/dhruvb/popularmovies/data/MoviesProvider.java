@@ -21,13 +21,17 @@ public class MoviesProvider extends ContentProvider {
 
     private static final int URI_TYPE_MOVIES = 100;
     private static final int URI_TYPE_MOVIE_ITEM = 101;
+    private static final int URI_TYPE_FAVORITES = 200;
+    private static final int URI_TYPE_FAVORITES_ITEM = 201;
 
     private static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = MoviesContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority, MoviesContract.MoviesEntry.TABLE_MOVIES, URI_TYPE_MOVIES);
-        matcher.addURI(authority, MoviesContract.MoviesEntry.TABLE_MOVIES + "/#", URI_TYPE_MOVIE_ITEM);
+        matcher.addURI(authority, MoviesContract.MoviesEntry.TABLE_NAME, URI_TYPE_MOVIES);
+        matcher.addURI(authority, MoviesContract.MoviesEntry.TABLE_NAME + "/#", URI_TYPE_MOVIE_ITEM);
+        matcher.addURI(authority, MoviesContract.FavoritesEntry.TABLE_NAME, URI_TYPE_FAVORITES);
+        matcher.addURI(authority, MoviesContract.FavoritesEntry.TABLE_NAME + "/#", URI_TYPE_FAVORITES_ITEM);
 
         return matcher;
     }
@@ -47,6 +51,10 @@ public class MoviesProvider extends ContentProvider {
                 return MoviesContract.MoviesEntry.CONTENT_DIR_TYPE;
             case URI_TYPE_MOVIE_ITEM:
                 return MoviesContract.MoviesEntry.CONTENT_ITEM_TYPE;
+            case URI_TYPE_FAVORITES:
+                return MoviesContract.MoviesEntry.CONTENT_DIR_TYPE;
+            case URI_TYPE_FAVORITES_ITEM:
+                return MoviesContract.MoviesEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
@@ -59,7 +67,7 @@ public class MoviesProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case URI_TYPE_MOVIES:
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        MoviesContract.MoviesEntry.TABLE_MOVIES,
+                        MoviesContract.MoviesEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -70,9 +78,31 @@ public class MoviesProvider extends ContentProvider {
                 return retCursor;
             case URI_TYPE_MOVIE_ITEM:
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        MoviesContract.MoviesEntry.TABLE_MOVIES,
+                        MoviesContract.MoviesEntry.TABLE_NAME,
                         projection,
                         MoviesContract.MoviesEntry._ID + " = ?",
+                        new String[] { String.valueOf(ContentUris.parseId(uri)) },
+                        null,
+                        null,
+                        sortOrder
+                );
+                return retCursor;
+            case URI_TYPE_FAVORITES:
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        MoviesContract.FavoritesEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                return retCursor;
+            case URI_TYPE_FAVORITES_ITEM:
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        MoviesContract.FavoritesEntry.TABLE_NAME,
+                        projection,
+                        MoviesContract.FavoritesEntry._ID + " = ?",
                         new String[] { String.valueOf(ContentUris.parseId(uri)) },
                         null,
                         null,
@@ -91,9 +121,15 @@ public class MoviesProvider extends ContentProvider {
         Uri retUri = null;
         switch (sUriMatcher.match(uri)) {
             case URI_TYPE_MOVIES:
-                long _id = db.replace(MoviesContract.MoviesEntry.TABLE_MOVIES, null, values);
+                long _id = db.replace(MoviesContract.MoviesEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
                     retUri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
+                }
+                break;
+            case URI_TYPE_FAVORITES_ITEM:
+                _id = db.replace(MoviesContract.FavoritesEntry.TABLE_NAME, null, values);
+                if (_id > 0) {
+                    retUri = MoviesContract.FavoritesEntry.buildMoviesUri(_id);
                 }
                 break;
             default:
@@ -110,11 +146,16 @@ public class MoviesProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)){
             case URI_TYPE_MOVIES:
                 numDeleted = db.delete(
-                        MoviesContract.MoviesEntry.TABLE_MOVIES, selection, selectionArgs);
+                        MoviesContract.MoviesEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             case URI_TYPE_MOVIE_ITEM:
-                numDeleted = db.delete(MoviesContract.MoviesEntry.TABLE_MOVIES,
+                numDeleted = db.delete(MoviesContract.MoviesEntry.TABLE_NAME,
                         MoviesContract.MoviesEntry._ID + " = ?",
+                        new String[]{ String.valueOf(ContentUris.parseId(uri)) });
+                break;
+            case URI_TYPE_FAVORITES_ITEM:
+                numDeleted = db.delete(MoviesContract.FavoritesEntry.TABLE_NAME,
+                        MoviesContract.FavoritesEntry._ID + " = ?",
                         new String[]{ String.valueOf(ContentUris.parseId(uri)) });
                 break;
             default:
@@ -135,13 +176,13 @@ public class MoviesProvider extends ContentProvider {
 
         switch(sUriMatcher.match(uri)){
             case URI_TYPE_MOVIES:
-                numUpdated = db.update(MoviesContract.MoviesEntry.TABLE_MOVIES,
+                numUpdated = db.update(MoviesContract.MoviesEntry.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case URI_TYPE_MOVIE_ITEM:
-                numUpdated = db.update(MoviesContract.MoviesEntry.TABLE_MOVIES,
+                numUpdated = db.update(MoviesContract.MoviesEntry.TABLE_NAME,
                         values,
                         MoviesContract.MoviesEntry._ID + " = ?",
                         new String[] { String.valueOf(ContentUris.parseId(uri)) });
@@ -172,7 +213,7 @@ public class MoviesProvider extends ContentProvider {
                         }
                         long _id = -1;
                         try{
-                            _id = db.replaceOrThrow(MoviesContract.MoviesEntry.TABLE_MOVIES,
+                            _id = db.replaceOrThrow(MoviesContract.MoviesEntry.TABLE_NAME,
                                     null, value);
                         }catch(SQLiteConstraintException e) {
                             Log.w(LOG_TAG, "Attempting to insert " +

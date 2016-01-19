@@ -147,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
         final String TMDB_RELEASE_DATE_KEY = "release_date";
         final String TMDB_USER_RATING_KEY = "vote_average";
         final String TMDB_OVERVIEW_KEY = "overview";
-        final String TMDB_VIDEO_KEY = "video";
         final String TMDB_BACKDROP__KEY = "backdrop_path";
 
         JSONObject moviesJson = new JSONObject(moviesJsonStr);
@@ -170,8 +169,6 @@ public class MainActivity extends AppCompatActivity {
                     resultArray.getJSONObject(i).getString(TMDB_BACKDROP__KEY));
             values[i].put(MoviesContract.MoviesEntry.COLUMN_RATING,
                     resultArray.getJSONObject(i).getString(TMDB_USER_RATING_KEY));
-            values[i].put(MoviesContract.MoviesEntry.COLUMN_HAS_VIDEO,
-                    resultArray.getJSONObject(i).getBoolean(TMDB_VIDEO_KEY));
         }
         getContentResolver().bulkInsert(MoviesContract.MoviesEntry.CONTENT_URI, values);
     }

@@ -22,7 +22,7 @@ public class MoviesDBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         Log.v(LOG_TAG, "creating database tables");
         final String SQL_CREATE_MOVIE_TABLE = "CREATE TABLE " +
-                MoviesContract.MoviesEntry.TABLE_MOVIES + "(" +
+                MoviesContract.MoviesEntry.TABLE_NAME + "(" +
                 MoviesContract.MoviesEntry._ID + " INTEGER PRIMARY KEY, " +
                 MoviesContract.MoviesEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
                 MoviesContract.MoviesEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
@@ -30,16 +30,27 @@ public class MoviesDBHelper extends SQLiteOpenHelper {
                 MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 MoviesContract.MoviesEntry.COLUMN_POSTER_URL + " TEXT NOT NULL, " +
                 MoviesContract.MoviesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL, " +
-                MoviesContract.MoviesEntry.COLUMN_HAS_VIDEO + " INTEGER DEFAULT 0" +
                 ");";
+
+        final String SQL_CREATE_FAVORITES_TABLE = "CREATE TABLE " +
+                MoviesContract.FavoritesEntry.TABLE_NAME + "(" +
+                MoviesContract.FavoritesEntry._ID + " INTEGER PRIMARY KEY, " +
+                MoviesContract.FavoritesEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
+                MoviesContract.FavoritesEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
+                MoviesContract.FavoritesEntry.COLUMN_RATING + " TEXT NOT NULL, " +
+                MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                MoviesContract.FavoritesEntry.COLUMN_POSTER_URL + " TEXT NOT NULL, " +
+                MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL, " +
+                ");";
+
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIE_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_FAVORITES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MoviesContract.MoviesEntry.TABLE_MOVIES + ";");
-        sqLiteDatabase.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = '" +
-                MoviesContract.MoviesEntry.TABLE_MOVIES + "';");
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MoviesContract.MoviesEntry.TABLE_NAME + ";");
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MoviesContract.FavoritesEntry.TABLE_NAME + ";");
         onCreate(sqLiteDatabase);
     }
 }

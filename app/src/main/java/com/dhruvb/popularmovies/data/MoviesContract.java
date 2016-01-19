@@ -12,8 +12,8 @@ public class MoviesContract {
     public static final String CONTENT_AUTHORITY = "com.dhruvb.popularmovies.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    public static final class MoviesEntry implements BaseColumns {
-        public static final String TABLE_MOVIES = "movies";
+    public static class MoviesEntry implements BaseColumns {
+        public static final String TABLE_NAME = "movies";
 
         public static final String _ID = "_id";
         public static final String COLUMN_TITLE = "title";
@@ -22,14 +22,13 @@ public class MoviesContract {
         public static final String COLUMN_POSTER_URL = "poster_path";
         public static final String COLUMN_BACKDROP_URL = "backdrop_path";
         public static final String COLUMN_RATING = "rating";
-        public static final String COLUMN_HAS_VIDEO = "has_video";
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
-                .appendPath(TABLE_MOVIES).build();
+                .appendPath(TABLE_NAME).build();
         public static final String CONTENT_DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE +
-                "/" + CONTENT_AUTHORITY + "/" + TABLE_MOVIES;
+                "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
-                "/" + CONTENT_AUTHORITY + "/" + TABLE_MOVIES;
+                "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
 
         public static Uri buildMoviesUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
@@ -49,6 +48,9 @@ public class MoviesContract {
             }
             return null;  // @TODO maybe raise an exception instead
         }
+    }
 
+    public static class FavoritesEntry extends MoviesEntry {
+        public static final String TABLE_NAME = "favorites";
     }
 }
