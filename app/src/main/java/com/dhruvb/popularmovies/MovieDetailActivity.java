@@ -53,6 +53,8 @@ public class MovieDetailActivity extends AppCompatActivity {
         Picasso.with(this)
                 .load(MoviesContract.MoviesEntry.getCompleteImageUrl(
                         cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_POSTER_URL)), "w500"))
+                .placeholder(R.drawable.ic_photo_black_48dp)
+                .error(R.drawable.ic_broken_image_black_36dp)
                 .into(moviePosterImageView);
         originalTitleTextView.setText(
                 cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_TITLE)));
