@@ -1,6 +1,7 @@
 package com.dhruvb.popularmovies;
 
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dhruvb.popularmovies.data.MoviesContract;
 import com.squareup.okhttp.Callback;
@@ -34,9 +36,11 @@ public class MovieDetailActivity extends AppCompatActivity {
     private static final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
     private OkHttpClient httpClient;
     private long mMovieId;
+    private boolean mIsFavorite;
 
     private void updateView() {
         ImageView moviePosterImageView = (ImageView)findViewById(R.id.movie_detail_poster_imageview);
+        final ImageView favoritesImageView = (ImageView)findViewById(R.id.movie_detail_favorite_image_view);
         TextView originalTitleTextView = (TextView)findViewById(R.id.movie_detail_title_textview);
         TextView releaseDateTextView = (TextView)findViewById(R.id.movie_detail_release_date_textview);
         TextView userRatingTextView = (TextView)findViewById(R.id.movie_detail_user_rating_textview);
@@ -44,7 +48,27 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         Uri movieURI = getIntent().getData();
         mMovieId = ContentUris.parseId(movieURI);
-        Cursor cursor = getContentResolver().query(movieURI, null, null, null, null);
+        Cursor cursor;
+        cursor = getContentResolver().query(
+                MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId),
+                null,
+                null,
+                null,
+                null);
+        if (cursor.getCount() == 0) {
+            // @TODO: check possibly for a memory leak
+            cursor = getContentResolver().query(movieURI, null, null, null, null);
+            mIsFavorite = false;
+        } else {
+            mIsFavorite = true;
+        }
+
+        if (mIsFavorite) {
+            favoritesImageView.setImageResource(R.drawable.heart_outline);
+        } else {
+            favoritesImageView.setImageResource(R.drawable.heart);
+        }
+
         if (!cursor.moveToFirst()) return;
 
         setTitle(cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_TITLE)));
@@ -56,14 +80,79 @@ public class MovieDetailActivity extends AppCompatActivity {
                 .placeholder(R.drawable.ic_photo_black_48dp)
                 .error(R.drawable.ic_broken_image_black_36dp)
                 .into(moviePosterImageView);
+
+        favoritesImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageView imageView = (ImageView)v;
+                if (mIsFavorite) {
+                    int deleted = getContentResolver().delete(
+                            MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId),
+                            null,
+                            null);
+                    if (deleted != 1) {
+                        Toast.makeText(v.getContext(), "Sorry, can't favorite the movie", Toast.LENGTH_SHORT).show();
+                    }
+                    imageView.setImageResource(R.drawable.heart_outline);
+                } else {
+                    ContentValues values = new ContentValues();
+                    Cursor copyCursor = getContentResolver().query(
+                            MoviesContract.MoviesEntry.buildMoviesUri(mMovieId),
+                            null,
+                            null,
+                            null,
+                            null
+                    );
+                    copyCursor.moveToFirst();
+
+                    values.put(
+                            MoviesContract.FavoritesEntry._ID,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry._ID))
+                    );
+                    values.put(
+                            MoviesContract.FavoritesEntry.COLUMN_TITLE,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_TITLE))
+                    );
+                    values.put(
+                            MoviesContract.FavoritesEntry.COLUMN_OVERVIEW,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_OVERVIEW))
+                    );
+                    values.put(
+                            MoviesContract.FavoritesEntry.COLUMN_RATING,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_RATING))
+                    );
+                    values.put(
+                            MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE))
+                    );
+                    values.put(
+                            MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL))
+                    );
+                    values.put(
+                            MoviesContract.FavoritesEntry.COLUMN_POSTER_URL,
+                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_POSTER_URL))
+                    );
+
+                    getContentResolver().insert(
+                            MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId), values);
+                    Toast.makeText(v.getContext(), "Movie favorited successfully", Toast.LENGTH_SHORT).show();
+                    imageView.setImageResource(R.drawable.heart_outline);
+                }
+            }
+        });
+
         originalTitleTextView.setText(
                 cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_TITLE)));
+
         releaseDateTextView.setText(String.format(
                 res.getString(R.string.movie_detail_label_release_date),
                 cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE))));
+
         userRatingTextView.setText(String.format(
                 res.getString(R.string.movie_detail_label_rating),
                 cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_RATING))));
+
         overviewTextView.setText(cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_OVERVIEW)));
         cursor.close();
     }

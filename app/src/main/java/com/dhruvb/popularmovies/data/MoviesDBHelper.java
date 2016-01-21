@@ -29,7 +29,7 @@ public class MoviesDBHelper extends SQLiteOpenHelper {
                 MoviesContract.MoviesEntry.COLUMN_RATING + " TEXT NOT NULL, " +
                 MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 MoviesContract.MoviesEntry.COLUMN_POSTER_URL + " TEXT NOT NULL, " +
-                MoviesContract.MoviesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL, " +
+                MoviesContract.MoviesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL " +
                 ");";
 
         final String SQL_CREATE_FAVORITES_TABLE = "CREATE TABLE " +
@@ -40,7 +40,7 @@ public class MoviesDBHelper extends SQLiteOpenHelper {
                 MoviesContract.FavoritesEntry.COLUMN_RATING + " TEXT NOT NULL, " +
                 MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 MoviesContract.FavoritesEntry.COLUMN_POSTER_URL + " TEXT NOT NULL, " +
-                MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL, " +
+                MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL + " TEXT NOT NULL " +
                 ");";
 
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIE_TABLE);
