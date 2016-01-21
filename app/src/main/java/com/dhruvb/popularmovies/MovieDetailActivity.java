@@ -39,7 +39,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     private boolean mIsFavorite;
 
     private void updateView() {
-        ImageView moviePosterImageView = (ImageView)findViewById(R.id.movie_detail_poster_imageview);
+        final ImageView moviePosterImageView = (ImageView)findViewById(R.id.movie_detail_poster_imageview);
         final ImageView favoritesImageView = (ImageView)findViewById(R.id.movie_detail_favorite_image_view);
         TextView originalTitleTextView = (TextView)findViewById(R.id.movie_detail_title_textview);
         TextView releaseDateTextView = (TextView)findViewById(R.id.movie_detail_release_date_textview);
@@ -55,18 +55,18 @@ public class MovieDetailActivity extends AppCompatActivity {
                 null,
                 null,
                 null);
-        if (cursor.getCount() == 0) {
-            // @TODO: check possibly for a memory leak
+        if (cursor.getCount() != 0) {
+            mIsFavorite = true;
+        } else {
+            cursor.close();
             cursor = getContentResolver().query(movieURI, null, null, null, null);
             mIsFavorite = false;
-        } else {
-            mIsFavorite = true;
         }
 
         if (mIsFavorite) {
-            favoritesImageView.setImageResource(R.drawable.heart_outline);
-        } else {
             favoritesImageView.setImageResource(R.drawable.heart);
+        } else {
+            favoritesImageView.setImageResource(R.drawable.heart_outline);
         }
 
         if (!cursor.moveToFirst()) return;
@@ -84,7 +84,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         favoritesImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageView imageView = (ImageView)v;
                 if (mIsFavorite) {
                     int deleted = getContentResolver().delete(
                             MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId),
@@ -93,7 +92,9 @@ public class MovieDetailActivity extends AppCompatActivity {
                     if (deleted != 1) {
                         Toast.makeText(v.getContext(), "Sorry, can't favorite the movie", Toast.LENGTH_SHORT).show();
                     }
-                    imageView.setImageResource(R.drawable.heart_outline);
+                    Toast.makeText(v.getContext(), "Movie unfavorited successfully", Toast.LENGTH_SHORT).show();
+                    favoritesImageView.setImageResource(R.drawable.heart_outline);
+                    mIsFavorite = false;
                 } else {
                     ContentValues values = new ContentValues();
                     Cursor copyCursor = getContentResolver().query(
@@ -111,34 +112,36 @@ public class MovieDetailActivity extends AppCompatActivity {
                     );
                     values.put(
                             MoviesContract.FavoritesEntry.COLUMN_TITLE,
-                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_TITLE))
+                            copyCursor.getString(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_TITLE))
                     );
                     values.put(
                             MoviesContract.FavoritesEntry.COLUMN_OVERVIEW,
-                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_OVERVIEW))
+                            copyCursor.getString(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_OVERVIEW))
                     );
                     values.put(
                             MoviesContract.FavoritesEntry.COLUMN_RATING,
-                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_RATING))
+                            copyCursor.getString(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_RATING))
                     );
                     values.put(
                             MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE,
-                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE))
+                            copyCursor.getString(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_RELEASE_DATE))
                     );
                     values.put(
                             MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL,
-                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL))
+                            copyCursor.getString(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_BACKDROP_URL))
                     );
                     values.put(
                             MoviesContract.FavoritesEntry.COLUMN_POSTER_URL,
-                            copyCursor.getInt(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_POSTER_URL))
+                            copyCursor.getString(copyCursor.getColumnIndex(MoviesContract.FavoritesEntry.COLUMN_POSTER_URL))
                     );
-
+                    copyCursor.close();
                     getContentResolver().insert(
                             MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId), values);
                     Toast.makeText(v.getContext(), "Movie favorited successfully", Toast.LENGTH_SHORT).show();
-                    imageView.setImageResource(R.drawable.heart_outline);
+                    favoritesImageView.setImageResource(R.drawable.heart);
+                    mIsFavorite = true;
                 }
+                favoritesImageView.invalidate();
             }
         });
 

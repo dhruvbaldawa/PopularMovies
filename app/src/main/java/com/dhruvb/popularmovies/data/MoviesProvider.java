@@ -52,9 +52,9 @@ public class MoviesProvider extends ContentProvider {
             case URI_TYPE_MOVIE_ITEM:
                 return MoviesContract.MoviesEntry.CONTENT_ITEM_TYPE;
             case URI_TYPE_FAVORITES:
-                return MoviesContract.MoviesEntry.CONTENT_DIR_TYPE;
+                return MoviesContract.FavoritesEntry.CONTENT_DIR_TYPE;
             case URI_TYPE_FAVORITES_ITEM:
-                return MoviesContract.MoviesEntry.CONTENT_ITEM_TYPE;
+                return MoviesContract.FavoritesEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }
@@ -121,13 +121,13 @@ public class MoviesProvider extends ContentProvider {
         Uri retUri = null;
         switch (sUriMatcher.match(uri)) {
             case URI_TYPE_MOVIES:
-                long _id = db.replace(MoviesContract.MoviesEntry.TABLE_NAME, null, values);
+                long _id = db.replaceOrThrow(MoviesContract.MoviesEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
                     retUri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
                 }
                 break;
             case URI_TYPE_FAVORITES_ITEM:
-                _id = db.replace(MoviesContract.FavoritesEntry.TABLE_NAME, null, values);
+                _id = db.replaceOrThrow(MoviesContract.FavoritesEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
                     retUri = MoviesContract.FavoritesEntry.buildMoviesUri(_id);
                 }
