@@ -60,7 +60,17 @@ public class MainActivity extends AppCompatActivity {
 //                    getString(R.string.main_activity_movie_detail_key));
 
 //        }
-        Cursor movieCursor = getContentResolver().query(MoviesContract.MoviesEntry.CONTENT_URI,
+        Uri contentURI;
+        // @TODO: move to utilities
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
+                getString(R.string.pref_sort_by_value_most_popular));
+        if (sortOrder.contentEquals(getString(R.string.pref_sort_by_value_favorites))) {
+            contentURI = MoviesContract.FavoritesEntry.CONTENT_URI;
+        } else {
+            contentURI = MoviesContract.MoviesEntry.CONTENT_URI;
+        }
+        Cursor movieCursor = getContentResolver().query(contentURI,
                 null,
                 null,
                 null,
@@ -70,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
 
         GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
         movieGridView.setAdapter(mMovieAdapter);
-//        movieGridView.setNumColumns(getWindowManager().getDefaultDisplay().getWidth() / 500);
         movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -177,6 +186,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
                 getString(R.string.pref_sort_by_value_most_popular));
+
+        if (sortOrder.contentEquals(getString(R.string.pref_sort_by_value_favorites))) return;
 
         final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/" + sortOrder;
         final String API_KEY = "api_key";
