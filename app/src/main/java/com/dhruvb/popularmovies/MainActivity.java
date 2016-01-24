@@ -2,11 +2,9 @@ package com.dhruvb.popularmovies;
 
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -17,8 +15,6 @@ import android.widget.GridView;
 
 import com.dhruvb.popularmovies.data.MoviesContract;
 import com.facebook.stetho.Stetho;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONArray;
@@ -60,37 +56,6 @@ public class MainActivity extends AppCompatActivity {
 //                    getString(R.string.main_activity_movie_detail_key));
 
 //        }
-        Uri contentURI;
-        // @TODO: move to utilities
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
-                getString(R.string.pref_sort_by_value_most_popular));
-        if (sortOrder.contentEquals(getString(R.string.pref_sort_by_value_favorites))) {
-            contentURI = MoviesContract.FavoritesEntry.CONTENT_URI;
-        } else {
-            contentURI = MoviesContract.MoviesEntry.CONTENT_URI;
-        }
-        Cursor movieCursor = getContentResolver().query(contentURI,
-                null,
-                null,
-                null,
-                null);
-
-        mMovieAdapter = new MovieAdapter(this, movieCursor, 0);
-
-        GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
-        movieGridView.setAdapter(mMovieAdapter);
-        movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                long _id = mMovieAdapter.getItemId(position);
-                Log.v(LOG_TAG, "movie item position: " + _id);
-                Uri uri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
-                Intent intent = new Intent(view.getContext(), MovieDetailActivity.class)
-                        .setData(uri);
-                startActivity(intent);
-            }
-        });
 
         Stetho.initialize(
                 Stetho.newInitializerBuilder(this)
@@ -99,9 +64,6 @@ public class MainActivity extends AppCompatActivity {
                         .build()
         );
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
         httpClient = new OkHttpClient();
     }
 
@@ -125,22 +87,41 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
+        Uri contentURI;
+        if (MovieUtilities.isFavoritesEnabled(this)) {
+            contentURI = MoviesContract.FavoritesEntry.CONTENT_URI;
+        } else {
+            contentURI = MoviesContract.MoviesEntry.CONTENT_URI;
+        }
+        Cursor movieCursor = getContentResolver().query(contentURI,
+                null,
+                null,
+                null,
+                null);
+
+        mMovieAdapter = new MovieAdapter(this, movieCursor, 0);
+
+        GridView movieGridView = (GridView) findViewById(R.id.grid_view_movie);
+        movieGridView.setAdapter(mMovieAdapter);
+        movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                long _id = mMovieAdapter.getItemId(position);
+                Log.v(LOG_TAG, "movie item position: " + _id);
+                Uri uri;
+                if (MovieUtilities.isFavoritesEnabled(view.getContext())) {
+                    uri = MoviesContract.FavoritesEntry.buildMoviesUri(_id);
+                } else {
+                    uri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
+                }
+                Intent intent = new Intent(view.getContext(), MovieDetailActivity.class)
+                        .setData(uri);
+                startActivity(intent);
+            }
+        });
+
         updateMovies();
         super.onStart();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.dhruvb.popularmovies/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
     }
 
     private void clearMoviesInDatabase() {
@@ -183,11 +164,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateMovies() {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        String sortOrder = settings.getString(getString(R.string.pref_sort_by_key),
-                getString(R.string.pref_sort_by_value_most_popular));
+        String sortOrder = MovieUtilities.getSortOrder(this);
 
-        if (sortOrder.contentEquals(getString(R.string.pref_sort_by_value_favorites))) return;
+        if (MovieUtilities.isFavoritesEnabled(this)) return;
 
         final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/" + sortOrder;
         final String API_KEY = "api_key";
@@ -235,19 +214,5 @@ public class MainActivity extends AppCompatActivity {
     public void onStop() {
         super.onStop();
         if (!mMovieAdapter.getCursor().isClosed()) mMovieAdapter.getCursor().close();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.dhruvb.popularmovies/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
     }
 }
