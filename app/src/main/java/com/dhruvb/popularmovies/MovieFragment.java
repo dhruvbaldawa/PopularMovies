@@ -76,7 +76,6 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onStart() {
-
         super.onStart();
     }
 

@@ -32,7 +32,9 @@ public class MainActivity extends AppCompatActivity {
         // @TODO: only notify on sort order changes
         MovieFragment movieFragment = (MovieFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_movie);
-        movieFragment.refreshMovies();
+        if (movieFragment != null) {
+            movieFragment.refreshMovies();
+        }
     }
 
     @Override
