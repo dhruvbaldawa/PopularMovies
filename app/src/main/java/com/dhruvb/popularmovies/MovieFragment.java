@@ -1,15 +1,14 @@
 package com.dhruvb.popularmovies;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
 import android.content.ContentValues;
-import android.support.v4.content.CursorLoader;
-import android.content.Intent;
-import android.support.v4.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +39,11 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     private MovieAdapter mMovieAdapter;
     private OkHttpClient httpClient;
 
+
+    public interface SelectCallback {
+        public void onItemSelected(Uri dateUri);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         httpClient = new OkHttpClient();
@@ -65,9 +69,7 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
                 } else {
                     uri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
                 }
-                Intent intent = new Intent(view.getContext(), MovieDetailActivity.class)
-                        .setData(uri);
-                startActivity(intent);
+                ((SelectCallback) getActivity()).onItemSelected(uri);
             }
         });
 

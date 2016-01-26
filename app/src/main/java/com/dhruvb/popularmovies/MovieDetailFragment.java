@@ -47,7 +47,9 @@ import java.util.Vector;
 public class MovieDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
     public static final int DETAIL_LOADER = 0;
+    static final String DETAIL_URI = "URI";
     private static final String HASHTAG = "#PopularMovies";
+    private Uri mUri;
 
     private ShareActionProvider mShareActionProvider;
     private String mMovieTitle;
@@ -77,6 +79,11 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mUri = arguments.getParcelable(DETAIL_URI);
+        }
+
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
         mMoviePosterImageView = (ImageView)rootView.findViewById(R.id.movie_detail_poster_imageview);
         mFavoritesImageView = (ImageView)rootView.findViewById(R.id.movie_detail_favorite_image_view);
@@ -109,9 +116,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Intent intent = getActivity().getIntent();
-        if (intent == null || intent.getData() == null) return null;
-        mMovieId = ContentUris.parseId(intent.getData());
+        mMovieId = ContentUris.parseId(mUri);
 
         Cursor cursor = getActivity().getContentResolver().query(
                 MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId),
@@ -124,7 +129,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         mIsFavorite = (cursor != null ? cursor.getCount() : 0) != 0;
         cursor.close();
 
-        return new CursorLoader(getActivity(), intent.getData(), null, null, null, null);
+        return new CursorLoader(getActivity(), mUri, null, null, null, null);
     }
 
     @Override
