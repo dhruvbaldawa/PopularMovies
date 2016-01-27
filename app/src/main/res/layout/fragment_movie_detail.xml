@@ -27,6 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
                 <ImageView
                     android:layout_width="36dp"
                     android:layout_height="wrap_content"
@@ -44,17 +45,28 @@
                     android:id="@+id/movie_detail_title_textview" />
             </LinearLayout>
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/movie_detail_release_date_textview" />
+                android:layout_margin="5dp"
+                android:layout_gravity="top">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:id="@+id/movie_detail_release_date_textview" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/movie_detail_user_rating_textview" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:textSize="28dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:id="@+id/movie_detail_user_rating_textview" />
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -76,7 +88,5 @@
                 android:visibility="invisible"
                 android:orientation="vertical" />
         </LinearLayout>
-
-
     </LinearLayout>
 </ScrollView>
