@@ -39,9 +39,8 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     private MovieAdapter mMovieAdapter;
     private OkHttpClient httpClient;
 
-
     public interface SelectCallback {
-        public void onItemSelected(Uri dateUri);
+        void onItemSelected(Uri dateUri);
     }
 
     @Override

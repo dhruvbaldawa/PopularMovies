@@ -33,8 +33,8 @@ public class MovieAdapter extends CursorAdapter {
                 cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_POSTER_URL));
         Picasso.with(context)
                 .load(MoviesContract.MoviesEntry.getCompleteImageUrl(posterPath, "w500"))
-                .placeholder(R.drawable.ic_photo_black_48dp)
-                .error(R.drawable.ic_broken_image_black_36dp)
+                .placeholder(R.drawable.image)
+                .error(R.drawable.image_broken)
                 .into(posterImageView);
     }
 }

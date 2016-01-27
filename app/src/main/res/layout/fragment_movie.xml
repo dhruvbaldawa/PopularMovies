@@ -9,6 +9,7 @@
         android:id="@+id/grid_view_movie"
         android:numColumns="auto_fit"
         android:gravity="center"
-        android:columnWidth="500px"/>
+        android:columnWidth="500px"
+        android:overScrollMode="ifContentScrolls"/>
 </FrameLayout>
 

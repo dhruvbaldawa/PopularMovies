@@ -146,8 +146,8 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         Picasso.with(getActivity())
                 .load(MoviesContract.MoviesEntry.getCompleteImageUrl(
                         cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_POSTER_URL)), "w500"))
-                .placeholder(R.drawable.ic_photo_black_48dp)
-                .error(R.drawable.ic_broken_image_black_36dp)
+                .placeholder(R.drawable.image)
+                .error(R.drawable.image_broken)
                 .into(mMoviePosterImageView);
 
         mFavoritesImageView.setOnClickListener(new View.OnClickListener() {
@@ -235,6 +235,13 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         super.onDestroyView();
     }
 
+    private Uri buildYoutubeUrl(String key) {
+        return Uri.parse("https://youtube.com/watch")
+                .buildUpon()
+                .appendQueryParameter("v", key)
+                .build();
+    }
+
     private Intent createShareIntent(String title, String name, String url) {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
@@ -318,21 +325,18 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                         // @TODO: better social message here
                         if (mShareActionProvider != null) {
                             mShareActionProvider.setShareIntent(createShareIntent(mMovieTitle,
-                                    trailors.get(0), trailorUrls.get(0)));
+                                    trailors.get(0), buildYoutubeUrl(trailorUrls.get(0)).toString()));
                         }
 
                         for (int i = 0; i < trailors.size(); i++) {
 
-                            View view = inflater.inflate(R.layout.list_item_trailor, null);
+                            final View view = inflater.inflate(R.layout.list_item_trailor, null);
                             view.setClickable(true);
                             view.setTag(trailorUrls.get(i));
                             view.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Uri uri = Uri.parse("https://youtube.com/watch")
-                                            .buildUpon()
-                                            .appendQueryParameter("v", (String) v.getTag())
-                                            .build();
+                                    Uri uri = buildYoutubeUrl((String)view.getTag());
                                     startActivity(new Intent(Intent.ACTION_VIEW, uri));
                                 }
                             });
