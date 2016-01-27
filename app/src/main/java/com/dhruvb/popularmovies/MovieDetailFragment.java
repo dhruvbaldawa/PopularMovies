@@ -49,6 +49,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     public static final int DETAIL_LOADER = 0;
     static final String DETAIL_URI = "URI";
     private static final String HASHTAG = "#PopularMovies";
+    private static final int HTTP_REQUEST_TAG = 0;
     private Uri mUri;
 
     private ShareActionProvider mShareActionProvider;
@@ -228,6 +229,12 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {}
 
+    @Override
+    public void onDestroyView() {
+        mHttpClient.cancel(HTTP_REQUEST_TAG);
+        super.onDestroyView();
+    }
+
     private Intent createShareIntent(String title, String name, String url) {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
@@ -255,6 +262,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
         Request request = new Request.Builder()
                 .url(builtUri.toString())
+                .tag(HTTP_REQUEST_TAG)
                 .build();
 
         mHttpClient.newCall(request).enqueue(new Callback() {
@@ -350,6 +358,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
         Request request = new Request.Builder()
                 .url(builtUri.toString())
+                .tag(HTTP_REQUEST_TAG)
                 .build();
 
         mHttpClient.newCall(request).enqueue(new Callback() {
