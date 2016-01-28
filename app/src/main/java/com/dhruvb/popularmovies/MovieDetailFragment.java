@@ -84,6 +84,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         if (arguments != null) {
             mUri = arguments.getParcelable(DETAIL_URI);
         }
+        mMovieId = ContentUris.parseId(mUri);
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
         mMoviePosterImageView = (ImageView)rootView.findViewById(R.id.movie_detail_poster_imageview);
@@ -117,8 +118,6 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        mMovieId = ContentUris.parseId(mUri);
-
         Cursor cursor = getActivity().getContentResolver().query(
                 MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId),
                 null,
