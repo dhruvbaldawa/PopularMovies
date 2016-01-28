@@ -58,6 +58,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     private long mMovieId;
     private boolean mIsFavorite;
 
+    private ImageView mBackdropImageView;
     private ImageView mMoviePosterImageView;
     private ImageView mFavoritesImageView;
     private TextView mOriginalTitleTextView;
@@ -87,6 +88,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         mMovieId = ContentUris.parseId(mUri);
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
+        mBackdropImageView = (ImageView)rootView.findViewById(R.id.movie_detail_backdrop_imageview);
         mMoviePosterImageView = (ImageView)rootView.findViewById(R.id.movie_detail_poster_imageview);
         mFavoritesImageView = (ImageView)rootView.findViewById(R.id.movie_detail_favorite_image_view);
         mOriginalTitleTextView = (TextView)rootView.findViewById(R.id.movie_detail_title_textview);
@@ -144,10 +146,16 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
         Picasso.with(getActivity())
                 .load(MoviesContract.MoviesEntry.getCompleteImageUrl(
-                        cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_POSTER_URL)), "w500"))
+                        cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_POSTER_URL)), "w342"))
                 .placeholder(R.drawable.image)
                 .error(R.drawable.image_broken)
                 .into(mMoviePosterImageView);
+
+        Picasso.with(getActivity())
+                .load(MoviesContract.MoviesEntry.getCompleteImageUrl(
+                        cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_BACKDROP_URL)), "w500"))
+                .into(mBackdropImageView);
+
 
         mFavoritesImageView.setOnClickListener(new View.OnClickListener() {
             @Override
