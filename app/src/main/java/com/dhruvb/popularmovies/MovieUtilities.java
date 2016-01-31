@@ -14,17 +14,13 @@ import java.util.Date;
 public class MovieUtilities {
     public static String getSortOrder(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        String sortOrder = settings.getString(context.getString(R.string.pref_sort_by_key),
+        return settings.getString(context.getString(R.string.pref_sort_by_key),
                 context.getString(R.string.pref_sort_by_value_most_popular));
-        return sortOrder;
     }
 
     public static boolean isFavoritesEnabled(Context context) {
         String sortOrder = getSortOrder(context);
-        if (sortOrder.contentEquals(context.getString(R.string.pref_sort_by_value_favorites))) {
-            return true;
-        }
-        return false;
+        return sortOrder.contentEquals(context.getString(R.string.pref_sort_by_value_favorites));
     }
 
     public static String formatMovieDetailDate(String date) {
@@ -34,6 +30,10 @@ public class MovieUtilities {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return new SimpleDateFormat("yyyy").format(dateObj);
+        if (dateObj != null) {
+            return new SimpleDateFormat("yyyy").format(dateObj);
+        } else {
+            return null;
+        }
     }
 }

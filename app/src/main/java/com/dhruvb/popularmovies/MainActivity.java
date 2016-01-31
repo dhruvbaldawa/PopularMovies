@@ -11,10 +11,8 @@ import com.facebook.stetho.Stetho;
 
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.SelectCallback {
-    public static final String MOVIE_FRAGMENT_TAG = "MOVIE_DETAIL_FRAGMENT";
+    public static final String MOVIE_DETAIL_FRAGMENT_TAG = "MOVIE_DETAIL_FRAGMENT";
     private boolean mTwoPane;
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private String mSortOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,16 +20,15 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
 
         setContentView(R.layout.activity_main);
         setTitle(R.string.app_name);
-        mSortOrder = MovieUtilities.getSortOrder(this);
 
         if (findViewById(R.id.fragment_movie_detail_view) != null) {
             mTwoPane = true;
             if (savedInstanceState != null) {
-                MovieDetailFragment movieDetailFragment = (MovieDetailFragment)getSupportFragmentManager().findFragmentByTag(MOVIE_FRAGMENT_TAG);
+                MovieDetailFragment movieDetailFragment = (MovieDetailFragment)getSupportFragmentManager().findFragmentByTag(MOVIE_DETAIL_FRAGMENT_TAG);
 
                 if (movieDetailFragment == null) {
                     getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_movie_detail_view, new MovieDetailFragment(), MOVIE_FRAGMENT_TAG)
+                            .replace(R.id.fragment_movie_detail_view, new MovieDetailFragment(), MOVIE_DETAIL_FRAGMENT_TAG)
                             .commit();
                 }
             }
@@ -89,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
             fragment.setArguments(args);
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_movie_detail_view, fragment, MOVIE_FRAGMENT_TAG)
+                    .replace(R.id.fragment_movie_detail_view, fragment, MOVIE_DETAIL_FRAGMENT_TAG)
                     .commit();
         } else {
             Intent intent = new Intent(this, MovieDetailActivity.class)

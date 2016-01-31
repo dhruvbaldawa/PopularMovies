@@ -16,4 +16,5 @@
     <string name="pref_sort_by_value_favorites" translatable="false">favorites</string>
     <string name="main_activity_movie_detail_key">movies</string>
     <string name="action_share">Share</string>
+    <string name="movie_detail_label_mark_favorite">Mark favorite</string>
 </resources>

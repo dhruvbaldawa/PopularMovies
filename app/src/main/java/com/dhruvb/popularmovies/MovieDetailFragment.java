@@ -119,7 +119,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_detail, menu);
-        mShareMenuItem = (MenuItem) menu.findItem(R.id.action_share);
+        mShareMenuItem = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareMenuItem);
     }
 
@@ -184,7 +184,8 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                             null,
                             null
                     );
-                    copyCursor.moveToFirst();
+
+                    if (copyCursor == null || !copyCursor.moveToFirst()) return;
 
                     values.put(
                             MoviesContract.FavoritesEntry._ID,
@@ -219,6 +220,14 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                             MoviesContract.FavoritesEntry.buildMoviesUri(mMovieId), values);
                     Toast.makeText(v.getContext(), "Movie favorited successfully", Toast.LENGTH_SHORT).show();
                     mIsFavorite = true;
+                }
+
+                // ugly duplication of code used to refresh the master view if the favorites change
+                MovieFragment movieFragment = (MovieFragment) getFragmentManager()
+                        .findFragmentById(R.id.fragment_movie);
+
+                if (movieFragment != null) {
+                    movieFragment.refreshMovies();
                 }
                 showFavoriteIcon();
             }

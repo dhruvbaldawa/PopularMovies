@@ -203,10 +203,14 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
         if (MovieUtilities.isFavoritesEnabled(getActivity())) return;
 
+        // Using the other endpoint because it does not change as often the discover endpoint
+//        final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
         final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/" + sortOrder;
         final String API_KEY = "api_key";
+//        final String SORT_BY_KEY = "sort_by";
 
         Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
+//                .appendQueryParameter(SORT_BY_KEY, sortOrder)
                 .appendQueryParameter(API_KEY, BuildConfig.THEMOVIEDB_API_KEY)
                 .build();
 
