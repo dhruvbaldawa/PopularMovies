@@ -1,0 +1,7 @@
+<resources>
+    <style name="MovieGridStyle">
+        <item name="android:choiceMode">singleChoice</item>
+        <item name="android:listSelector">@color/gridItemSelector</item>
+        <item name="android:drawSelectorOnTop">true</item>
+    </style>
+</resources>
