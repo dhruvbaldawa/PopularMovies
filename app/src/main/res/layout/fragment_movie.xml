@@ -10,6 +10,9 @@
         android:numColumns="auto_fit"
         android:gravity="center"
         android:columnWidth="500px"
-        android:overScrollMode="ifContentScrolls"/>
+        android:choiceMode="singleChoice"
+        android:overScrollMode="ifContentScrolls"
+        android:drawSelectorOnTop="true"
+        android:listSelector="@color/gridItemSelector"/>
 </FrameLayout>
 

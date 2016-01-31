@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -12,7 +11,7 @@ import com.facebook.stetho.Stetho;
 
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.SelectCallback {
-    public static final String MOVIE_FRAGMENT_TAG = null;
+    public static final String MOVIE_FRAGMENT_TAG = "MOVIE_DETAIL_FRAGMENT";
     private boolean mTwoPane;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private String mSortOrder;
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
             if (savedInstanceState != null) {
                 MovieDetailFragment movieDetailFragment = (MovieDetailFragment)getSupportFragmentManager().findFragmentByTag(MOVIE_FRAGMENT_TAG);
 
-                if (movieDetailFragment != null) {
+                if (movieDetailFragment == null) {
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_movie_detail_view, new MovieDetailFragment(), MOVIE_FRAGMENT_TAG)
                             .commit();
