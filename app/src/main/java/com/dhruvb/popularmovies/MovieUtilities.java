@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by dhruv on 1/24/16.
  */
@@ -21,5 +25,15 @@ public class MovieUtilities {
             return true;
         }
         return false;
+    }
+
+    public static String formatMovieDetailDate(String date) {
+        Date dateObj = null;
+        try {
+            dateObj = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new SimpleDateFormat("yyyy").format(dateObj);
     }
 }

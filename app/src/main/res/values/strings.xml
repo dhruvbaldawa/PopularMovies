@@ -2,7 +2,7 @@
     <string name="app_name">Popular Movies</string>
     <string name="title_activity_settings">Settings</string>
 
-    <string name="movie_detail_label_release_date">Release date: \n%1$s</string>
+    <string name="movie_detail_label_release_date">%1$s</string>
     <string name="movie_detail_label_rating">%1$s/10</string>
 
     <string name="action_settings">Settings</string>

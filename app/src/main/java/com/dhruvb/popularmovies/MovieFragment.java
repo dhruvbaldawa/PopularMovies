@@ -35,9 +35,12 @@ import okhttp3.Response;
 public class MovieFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
     private static final int MOVIE_LOADER = 0;
+    private static final String STATE_SELECTED_MOVIE_KEY = "mPosition";
 
     private MovieAdapter mMovieAdapter;
-    private OkHttpClient httpClient;
+    private OkHttpClient mHttpClient;
+    private GridView mGridView;
+    private int mPosition = GridView.INVALID_POSITION;
 
     public interface SelectCallback {
         void onItemSelected(Uri dateUri);
@@ -45,7 +48,7 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        httpClient = new OkHttpClient();
+        mHttpClient = new OkHttpClient();
         super.onCreate(savedInstanceState);
     }
 
@@ -55,15 +58,16 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
         mMovieAdapter = new MovieAdapter(getActivity(), null, 0);
         View rootView = inflater.inflate(R.layout.fragment_movie, container, false);
 
-        GridView movieGridView = (GridView) rootView.findViewById(R.id.grid_view_movie);
-        movieGridView.setAdapter(mMovieAdapter);
-        movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mGridView = (GridView) rootView.findViewById(R.id.grid_view_movie);
+        mGridView.setAdapter(mMovieAdapter);
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 long _id = mMovieAdapter.getItemId(position);
+                mPosition = position;
                 Log.v(LOG_TAG, "movie item position: " + _id);
                 Uri uri;
-                if (MovieUtilities.isFavoritesEnabled(view.getContext())) {
+                if (MovieUtilities.isFavoritesEnabled(getActivity())) {
                     uri = MoviesContract.FavoritesEntry.buildMoviesUri(_id);
                 } else {
                     uri = MoviesContract.MoviesEntry.buildMoviesUri(_id);
@@ -72,12 +76,18 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
             }
         });
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_SELECTED_MOVIE_KEY)) {
+            mPosition = savedInstanceState.getInt(STATE_SELECTED_MOVIE_KEY);
+        }
         return rootView;
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPosition != GridView.INVALID_POSITION) {
+            outState.putInt(STATE_SELECTED_MOVIE_KEY, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -108,6 +118,26 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMovieAdapter.swapCursor(data);
+
+        if (mPosition != GridView.INVALID_POSITION) {
+            mGridView.setSelection(mPosition);
+        }
+
+//        } else {
+//            // select the first item in the list by default
+//            new Handler().post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mPosition = 0;
+//                    mGridView.setSelection(mPosition);
+//                    mGridView.performItemClick(
+//                            mGridView.getChildAt(mPosition),
+//                            mPosition,
+//                            mMovieAdapter.getItemId(mPosition)
+//                    );
+//                }
+//            });
+//        }
     }
 
     @Override
@@ -184,7 +214,7 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
                 .url(builtUri.toString())
                 .build();
 
-        httpClient.newCall(request).enqueue(new Callback() {
+        mHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
                 e.printStackTrace();

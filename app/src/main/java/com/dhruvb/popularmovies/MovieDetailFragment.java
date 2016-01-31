@@ -67,6 +67,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     private TextView mOverviewTextView;
     private LinearLayout mTrailorsLayout;
     private LinearLayout mReviewsLayout;
+    private MenuItem mShareMenuItem;
 
     public MovieDetailFragment() {
         setHasOptionsMenu(true);
@@ -118,8 +119,8 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_detail, menu);
-        MenuItem menuItem = menu.findItem(R.id.action_share);
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        mShareMenuItem = (MenuItem) menu.findItem(R.id.action_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareMenuItem);
     }
 
     @Override
@@ -228,7 +229,10 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
         mReleaseDateTextView.setText(String.format(
                 res.getString(R.string.movie_detail_label_release_date),
-                cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE))));
+                MovieUtilities.formatMovieDetailDate(
+                        cursor.getString(
+                                cursor.getColumnIndex(
+                                        MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE)))));
 
         mUserRatingTextView.setText(String.format(
                 res.getString(R.string.movie_detail_label_rating),
@@ -326,8 +330,6 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                     e.printStackTrace();
                 }
 
-                if (trailors.isEmpty()) return;
-
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -335,6 +337,13 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                         mTrailorsLayout.setVisibility(View.VISIBLE);
                         mTrailorsLayout.removeAllViews();
+
+                        if (trailors.isEmpty()) {
+                            // hide the share intent if there are no trailors to share
+                            mShareMenuItem.setVisible(false);
+                            mShareActionProvider.refreshVisibility();
+                            return;
+                        }
 
                         // @TODO: better social message here
                         if (mShareActionProvider != null) {
