@@ -74,18 +74,16 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "onCreate() called with: " + "savedInstanceState = [" + savedInstanceState + "]");
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         mHttpClient = new OkHttpClient();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            mUri = arguments.getParcelable(DETAIL_URI);
-        }
-        mMovieId = ContentUris.parseId(mUri);
+        Log.d(LOG_TAG, "onCreateView() called with: " + "savedInstanceState = [" + savedInstanceState + "]");
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
         mBackdropImageView = (ImageView)rootView.findViewById(R.id.movie_detail_backdrop_imageview);
@@ -105,10 +103,16 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
-        fetchAndShowTrailors();
-        fetchAndShowReviews();
+        Log.d(LOG_TAG, "onActivityCreated() called with: " + "savedInstanceState = [" + savedInstanceState + "]");
         super.onActivityCreated(savedInstanceState);
+
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mUri = arguments.getParcelable(DETAIL_URI);
+            mMovieId = ContentUris.parseId(mUri);
+        }
+
+        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
     }
 
     @Override
@@ -231,6 +235,9 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                 cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_RATING))));
 
         mOverviewTextView.setText(cursor.getString(cursor.getColumnIndex(MoviesContract.MoviesEntry.COLUMN_OVERVIEW)));
+
+        fetchAndShowTrailors();
+        fetchAndShowReviews();
     }
 
     @Override
@@ -324,7 +331,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        LayoutInflater inflater = (LayoutInflater)getActivity()
+                        LayoutInflater inflater = (LayoutInflater) getActivity()
                                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                         mTrailorsLayout.setVisibility(View.VISIBLE);
                         mTrailorsLayout.removeAllViews();
@@ -343,11 +350,11 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                             view.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Uri uri = buildYoutubeUrl((String)view.getTag());
+                                    Uri uri = buildYoutubeUrl((String) view.getTag());
                                     startActivity(new Intent(Intent.ACTION_VIEW, uri));
                                 }
                             });
-                            TextView name = (TextView)view.findViewById(R.id.movie_detail_trailor_textview);
+                            TextView name = (TextView) view.findViewById(R.id.movie_detail_trailor_textview);
                             name.setText(trailors.get(i));
 
                             mTrailorsLayout.addView(view);

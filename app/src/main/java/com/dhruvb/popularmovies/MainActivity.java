@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -11,8 +12,10 @@ import com.facebook.stetho.Stetho;
 
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.SelectCallback {
-    public static final String MOVIE_FRAGMENT_TAG = "MFTAG";
+    public static final String MOVIE_FRAGMENT_TAG = null;
     private boolean mTwoPane;
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private String mSortOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,13 +23,18 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
 
         setContentView(R.layout.activity_main);
         setTitle(R.string.app_name);
+        mSortOrder = MovieUtilities.getSortOrder(this);
 
-        if (findViewById(R.id.movie_detail_view_container) != null) {
+        if (findViewById(R.id.fragment_movie_detail_view) != null) {
             mTwoPane = true;
             if (savedInstanceState != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.movie_detail_view_container, new MovieDetailFragment(), MOVIE_FRAGMENT_TAG)
-                        .commit();
+                MovieDetailFragment movieDetailFragment = (MovieDetailFragment)getSupportFragmentManager().findFragmentByTag(MOVIE_FRAGMENT_TAG);
+
+                if (movieDetailFragment != null) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_movie_detail_view, new MovieDetailFragment(), MOVIE_FRAGMENT_TAG)
+                            .commit();
+                }
             }
         } else {
             mTwoPane = false;
@@ -40,13 +48,15 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
         );
     }
 
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         // @TODO: only notify on sort order changes
         MovieFragment movieFragment = (MovieFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_movie);
-        if (movieFragment != null) {
+        String sortOrder = MovieUtilities.getSortOrder(this);
+        if (movieFragment != null && !sortOrder.contentEquals(mSortOrder)) {
             movieFragment.refreshMovies();
+            mSortOrder = sortOrder;
         }
     }
 
@@ -81,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
             fragment.setArguments(args);
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.movie_detail_view_container, fragment, MOVIE_FRAGMENT_TAG)
+                    .replace(R.id.fragment_movie_detail_view, fragment, MOVIE_FRAGMENT_TAG)
                     .commit();
         } else {
             Intent intent = new Intent(this, MovieDetailActivity.class)

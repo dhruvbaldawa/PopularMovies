@@ -16,7 +16,7 @@
         android:layout_weight="2"
         tools:context="com.dhruvb.popularmovies.MovieFragment" />
     <FrameLayout
-        android:id="@+id/movie_detail_view_container"
+        android:id="@+id/fragment_movie_detail_view"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="4"/>
