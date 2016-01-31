@@ -45,26 +45,19 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="top"
-                        style="@style/TextAppearance.AppCompat.Large"
-                        android:textColor="#000"
-                        android:layout_weight="1"
-                        android:id="@+id/movie_detail_title_textview"
-                        android:paddingLeft="5dp"/>
+                        style="@style/MovieDetail.Title"
+                        android:id="@+id/movie_detail_title_textview" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="24dp"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        style="@style/MovieDetail.ReleaseDate"
                         android:id="@+id/movie_detail_release_date_textview" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="start"
-                        android:textSize="28dp"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        style="@style/MovieDetail.Rating"
                         android:id="@+id/movie_detail_user_rating_textview" />
 
                     <LinearLayout
@@ -82,10 +75,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:gravity="center_vertical"
-                            android:textSize="20dp"
-                            android:text="Favorite"/>
+                            android:textSize="18dp"
+                            android:textStyle="italic"
+                            android:text="Mark favorite"/>
                     </LinearLayout>
-
                 </LinearLayout>
             </LinearLayout>
 
@@ -100,7 +93,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="invisible"
-                android:orientation="vertical" />
+                android:orientation="vertical"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp" />
 
             <LinearLayout
                 android:id="@+id/movie_detail_reviews_layout"

@@ -52,10 +52,9 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Sel
         // @TODO: only notify on sort order changes
         MovieFragment movieFragment = (MovieFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_movie);
-        String sortOrder = MovieUtilities.getSortOrder(this);
-        if (movieFragment != null && !sortOrder.contentEquals(mSortOrder)) {
+
+        if (movieFragment != null) {
             movieFragment.refreshMovies();
-            mSortOrder = sortOrder;
         }
     }
 
